@@ -1,17 +1,8 @@
-/**
- * Shopify Proxy for Vercel Serverless Function
- * JavaScript version - no TypeScript compilation issues
- */
-
 export default async function handler(req, res) {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -28,80 +19,72 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Product handle is required' });
   }
 
-  // Check environment variables
   const SHOPIFY_STORE_URL = process.env.SHOPIFY_STORE_URL;
   const SHOPIFY_STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN;
 
   if (!SHOPIFY_STORE_URL) {
     return res.status(500).json({ 
-      error: 'SHOPIFY_STORE_URL environment variable is not set',
-      details: 'Please set SHOPIFY_STORE_URL in Vercel environment variables'
+      error: 'SHOPIFY_STORE_URL environment variable is not set'
     });
   }
 
   if (!SHOPIFY_STOREFRONT_TOKEN) {
     return res.status(500).json({ 
-      error: 'SHOPIFY_STOREFRONT_TOKEN environment variable is not set',
-      details: 'Please set SHOPIFY_STOREFRONT_TOKEN in Vercel environment variables'
+      error: 'SHOPIFY_STOREFRONT_TOKEN environment variable is not set'
     });
   }
 
-  // Validate store URL format
   if (!SHOPIFY_STORE_URL.includes('.myshopify.com')) {
     return res.status(500).json({ 
-      error: 'Invalid SHOPIFY_STORE_URL format',
-      details: 'Store URL should be in format: yourstore.myshopify.com (no https://)',
-      received: SHOPIFY_STORE_URL
+      error: 'Invalid SHOPIFY_STORE_URL format'
     });
   }
 
   try {
-    const query = `
-      query GetProduct($handle: String!) {
-        productByHandle(handle: $handle) {
-          id
-          title
-          handle
-          description
-          descriptionHtml
-          priceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
+    const query = `query GetProduct($handle: String!) {
+      productByHandle(handle: $handle) {
+        id
+        title
+        handle
+        description
+        descriptionHtml
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
           }
-          compareAtPriceRange {
-            minVariantPrice {
-              amount
-              currencyCode
-            }
-          }
-          featuredImage {
-            url
-            altText
-          }
-          images(first: 10) {
-            edges {
-              node {
-                url
-                altText
-              }
-            }
-          }
-          variants(first: 20) {
-            edges {
-              node {
-                id
-                title
-                price
-                availableForSale
-              }
-            }
-          }
-          availableForSale
         }
+        compareAtPriceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        featuredImage {
+          url
+          altText
+        }
+        images(first: 10) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+        variants(first: 20) {
+          edges {
+            node {
+              id
+              title
+              price
+              availableForSale
+            }
+          }
+        }
+        availableForSale
       }
-    `;
+    }`;
 
     const shopifyUrl = `https://${SHOPIFY_STORE_URL}/api/2024-01/graphql.json`;
 
@@ -109,12 +92,12 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_TOKEN,
+        'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_TOKEN
       },
       body: JSON.stringify({
-        query,
-        variables: { handle },
-      }),
+        query: query,
+        variables: { handle: handle }
+      })
     });
 
     if (!response.ok) {
@@ -130,13 +113,13 @@ export default async function handler(req, res) {
     if (data.errors) {
       return res.status(400).json({ 
         error: data.errors[0].message,
-        errors: data.errors 
+        errors: data.errors
       });
     }
 
     if (!data.data || !data.data.productByHandle) {
       return res.status(404).json({ 
-        error: `Product with handle "${handle}" not found` 
+        error: `Product with handle "${handle}" not found`
       });
     }
 
