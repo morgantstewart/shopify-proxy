@@ -1,7 +1,15 @@
 {
-  "functions": {
-    "api/shopify/product.ts": {
-      "runtime": "nodejs18.x"
-    }
+  "name": "shopify-proxy",
+  "version": "1.0.0",
+  "description": "Shopify proxy for Framer integration",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   }
 }
