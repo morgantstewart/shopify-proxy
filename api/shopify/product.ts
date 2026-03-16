@@ -1,6 +1,6 @@
 /**
  * Shopify Proxy for Vercel Serverless Function
- * Fixed version - no syntax errors
+ * Fixed version - no syntax errors, proper TypeScript types
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -130,7 +130,7 @@ export default async function handler(
       });
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
 
     if (data.errors) {
       return res.status(400).json({ 
