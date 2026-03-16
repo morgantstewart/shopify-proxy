@@ -1,16 +1,6 @@
 /**
  * Shopify Proxy for Vercel Serverless Function
- * 
- * This file creates a proxy to avoid CORS issues when calling Shopify API from Framer
- * 
- * Setup Instructions:
- * 1. Create a new Vercel project (or use existing)
- * 2. Create folder: /api/shopify/product.ts
- * 3. Copy this code into that file
- * 4. Set environment variables in Vercel:
- *    - SHOPIFY_STORE_URL: yourstore.myshopify.com
- *    - SHOPIFY_STOREFRONT_TOKEN: your_storefront_api_token
- * 5. Deploy and use the URL in your Framer component
+ * Fixed version - no syntax errors
  */
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -43,12 +33,30 @@ export default async function handler(
     return res.status(400).json({ error: 'Product handle is required' });
   }
 
+  // Check environment variables
   const SHOPIFY_STORE_URL = process.env.SHOPIFY_STORE_URL;
   const SHOPIFY_STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN;
 
-  if (!SHOPIFY_STORE_URL || !SHOPIFY_STOREFRONT_TOKEN) {
+  if (!SHOPIFY_STORE_URL) {
     return res.status(500).json({ 
-      error: 'Shopify configuration missing. Please set SHOPIFY_STORE_URL and SHOPIFY_STOREFRONT_TOKEN environment variables.' 
+      error: 'SHOPIFY_STORE_URL environment variable is not set',
+      details: 'Please set SHOPIFY_STORE_URL in Vercel environment variables'
+    });
+  }
+
+  if (!SHOPIFY_STOREFRONT_TOKEN) {
+    return res.status(500).json({ 
+      error: 'SHOPIFY_STOREFRONT_TOKEN environment variable is not set',
+      details: 'Please set SHOPIFY_STOREFRONT_TOKEN in Vercel environment variables'
+    });
+  }
+
+  // Validate store URL format
+  if (!SHOPIFY_STORE_URL.includes('.myshopify.com')) {
+    return res.status(500).json({ 
+      error: 'Invalid SHOPIFY_STORE_URL format',
+      details: 'Store URL should be in format: yourstore.myshopify.com (no https://)',
+      received: SHOPIFY_STORE_URL
     });
   }
 
@@ -100,7 +108,9 @@ export default async function handler(
       }
     `;
 
-    const response = await fetch(`https://${SHOPIFY_STORE_URL}/api/2024-01/graphql.json`, {
+    const shopifyUrl = `https://${SHOPIFY_STORE_URL}/api/2024-01/graphql.json`;
+
+    const response = await fetch(shopifyUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -114,7 +124,10 @@ export default async function handler(
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Shopify API error: ${response.status} - ${errorText}`);
+      return res.status(response.status).json({ 
+        error: `Shopify API error: ${response.status}`,
+        details: errorText
+      });
     }
 
     const data = await response.json();
@@ -126,7 +139,7 @@ export default async function handler(
       });
     }
 
-    if (!data.data?.productByHandle) {
+    if (!data.data || !data.data.productByHandle) {
       return res.status(404).json({ 
         error: `Product with handle "${handle}" not found` 
       });
@@ -134,9 +147,9 @@ export default async function handler(
 
     res.status(200).json(data.data);
   } catch (error: any) {
-    console.error('Shopify proxy error:', error);
-    res.status(500).json({ 
-      error: error.message || 'Failed to fetch product from Shopify' 
+    return res.status(500).json({ 
+      error: error.message || 'Failed to fetch product from Shopify',
+      details: error.stack || 'No additional details'
     });
   }
 }
