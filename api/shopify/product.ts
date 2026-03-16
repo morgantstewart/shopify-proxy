@@ -1,4 +1,3 @@
-```typescript
 /**
  * Shopify Proxy for Vercel Serverless Function
  * 
@@ -141,6 +140,3 @@ export default async function handler(
     });
   }
 }
-```
-
----
