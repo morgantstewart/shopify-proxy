@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/shopify/product.ts": {
-      "runtime": "nodejs20"
-    }
-  }
-}
