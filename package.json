@@ -1,6 +1,7 @@
 {
   "name": "shopify-proxy",
   "version": "1.0.0",
+  "type": "module",
   "description": "Shopify proxy for Framer integration",
   "scripts": {
     "dev": "vercel dev"
