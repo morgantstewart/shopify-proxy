@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Shopify proxy for Framer integration",
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "node -e \"console.log('Use: vercel dev (global) or deploy to Vercel. This script is intentionally non-recursive.')\""
+  },
+  "engines": {
+    "node": "20.x"
   },
   "dependencies": {
     "@vercel/node": "^3.0.0"
