@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
   }
 
   const store = process.env.SHOPIFY_STORE_URL;
-  const token = process.env.SHOPIFY_STOREFRONT_TOKEN;
+  const token = process.env.SHOPIFY_STOREFRONT_PRIVATE_TOKEN;
 
   if (!store || !token) {
     return res.status(500).json({ error: 'Missing environment variables' });
