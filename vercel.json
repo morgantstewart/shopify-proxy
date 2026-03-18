@@ -1,7 +1,7 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/shopify/product", "destination": "/api/shopify/product.js" },
-    { "source": "/api/shopify/product/", "destination": "/api/shopify/product.js" }
+    { "source": "/api/shopify/product", "destination": "/api/shopify/product-common.js" },
+    { "source": "/api/shopify/product/", "destination": "/api/shopify/product-common.js" }
   ]
 }
