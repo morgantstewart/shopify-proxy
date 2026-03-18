@@ -5,4 +5,3 @@
     { "source": "/api/shopify/product/", "destination": "/api/shopify/product.js" }
   ]
 }
-
